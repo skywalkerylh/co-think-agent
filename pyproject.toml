@@ -1,0 +1,14 @@
+[project]
+name = "co-think-agent"
+version = "0.1.0"
+description = "設計一個具備「主動引導」、「狀態感知」與「結構化產出」的 AI Agent，協助集團高層進行策略思考"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "google-genai>=1.56.0",
+    "langgraph>=1.0.5",
+    "python-dotenv>=1.2.1",
+    "IPython>=8.0.0",
+    "streamlit>=1.30.0",
+]
+
