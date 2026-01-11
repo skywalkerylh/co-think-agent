@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from langchain_core.messages import SystemMessage
 
-from src.llm import model
+from src.llm import model_strict
 from src.logger import logger
 from src.state import ProblemEvaluation, State
 
@@ -38,7 +38,7 @@ async def node_evaluation(state: State) -> Dict[str, Any]:
     - 30分 (破框): 用戶專注於 "想解決的本質困難" 或 "想創造的價值"，而非限定某種工具。
 
         """
-    structured_model = model.with_structured_output(ProblemEvaluation)
+    structured_model = model_strict.with_structured_output(ProblemEvaluation)
     last_message = state.messages[-1]
     messages_to_send = [SystemMessage(content=prompt), last_message]
     response = await structured_model.ainvoke(messages_to_send)

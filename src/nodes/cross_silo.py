@@ -1,6 +1,6 @@
 from langchain_core.messages import AIMessage, SystemMessage
 
-from src.llm import model
+from src.llm import model, model_strict
 from src.logger import logger
 from src.state import ProblemEvaluation, State
 
@@ -57,14 +57,15 @@ async def node_cross_silo(state: State):
         - 例子要從高層的職位出發，並且具體說明部門可能需要的資源
         """
 
-        structured_model = model.with_structured_output(ProblemEvaluation)
+        structured_model = model_strict.with_structured_output(ProblemEvaluation)
         eval_result = await structured_model.ainvoke(
             [SystemMessage(content=prompt), last_message]
         )
         # update result
         response_content = eval_result.advice
         updated_result += f"\nAI Advice: {response_content}"
-
+        if eval_result.score >= 65:
+            response_content = ""
         logger.info(f"Cross-silo score: {eval_result.score}")
 
         return {

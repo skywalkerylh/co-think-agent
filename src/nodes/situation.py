@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from langchain_core.messages import SystemMessage
 
-from src.llm import model
+from src.llm import model_strict
 from src.logger import logger
 from src.state import ProblemExtraction, State
 
@@ -22,7 +22,7 @@ async def node_situation(state: State) -> Dict[str, Any]:
     2. 若主管的回答中未提及某項資訊或資訊未變更，請回傳 None。
     3. 只有在主管明確想要修改或補充時才更新。
     """
-    structured_model = model.with_structured_output(ProblemExtraction)
+    structured_model = model_strict.with_structured_output(ProblemExtraction)
     messages = state.messages[-1]
     messages_to_send = [SystemMessage(content=extraction_prompt), messages]
     extracted_data: ProblemExtraction = await structured_model.ainvoke(messages_to_send)

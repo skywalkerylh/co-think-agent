@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from langchain_core.messages import SystemMessage
 
-from src.llm import model
+from src.llm import model_strict
 from src.logger import logger
 from src.state import ProblemExtraction, State
 
@@ -21,7 +21,7 @@ async def node_summary(state: State) -> Dict[str, Any]:
     - 只需回覆精簡摘要，無需多餘的說明或打招呼
     """
 
-    structured_model = model.with_structured_output(ProblemExtraction)
+    structured_model = model_strict.with_structured_output(ProblemExtraction)
     last_message = state.messages[-1]
     msg = await structured_model.ainvoke([SystemMessage(content=prompt), last_message])
 
