@@ -13,7 +13,7 @@ import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
 from src.graph import graph
-from src.node import State
+from src.state import State
 
 # Page configuration
 st.set_page_config(
