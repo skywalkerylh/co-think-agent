@@ -5,10 +5,13 @@ description = "設計一個具備「主動引導」、「狀態感知」與「�
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "google-genai>=1.56.0",
+    "langchain-google-genai>=0.0.10",
     "langgraph>=1.0.5",
     "python-dotenv>=1.2.1",
     "IPython>=8.0.0",
     "streamlit>=1.30.0",
+    "gradio>=5.22.0",
+    "pydantic>=2.10.7",
+    "langgraph-cli[inmem]"
 ]
 
