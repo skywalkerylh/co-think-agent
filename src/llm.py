@@ -1,8 +1,13 @@
-from langchain_google_genai import ChatGoogleGenerativeAI
-from src.settings import settings
+import os
 
-llm = ChatGoogleGenerativeAI(
-    google_api_key=settings.GOOGLE_API_KEY,
-    model=settings.MODEL_NAME,
-    temperature=settings.TEMPERATURE,
+from langchain_openai import ChatOpenAI
+
+from src.tool import generate_ppt
+
+model = ChatOpenAI(
+    openai_api_key=os.getenv("OPENAI_API_KEY"),
+    model="gpt-4o-mini",
+    temperature=1,
 )
+tools = [generate_ppt]
+model_with_tools = model.bind_tools(tools)

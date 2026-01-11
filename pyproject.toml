@@ -1,17 +1,21 @@
 [project]
-name = "co-think-agent"
-version = "0.1.0"
-description = "設計一個具備「主動引導」、「狀態感知」與「結構化產出」的 AI Agent，協助集團高層進行策略思考"
+name = "agent"
+version = "0.0.1"
+description = "Co-thinking agent "
+authors = [
+    { name = "Annie Huang", email = "r11528050@g.ntu.edu.tw" },
+]
 readme = "README.md"
-requires-python = ">=3.12"
+license = { text = "MIT" }
+requires-python = ">=3.10"
 dependencies = [
-    "langchain-google-genai>=0.0.10",
-    "langgraph>=1.0.5",
-    "python-dotenv>=1.2.1",
-    "IPython>=8.0.0",
+    "langgraph>=1.0.0",
+    "python-dotenv>=1.0.1",
+    "langchain-core>=0.3.0",
+    "langchain-openai>=1.1.6",
+    "python-pptx>=1.0.2",
     "streamlit>=1.30.0",
-    "gradio>=5.22.0",
-    "pydantic>=2.10.7",
-    "langgraph-cli[inmem]"
+    "nest-asyncio>=1.5.6",
+    
 ]
 
