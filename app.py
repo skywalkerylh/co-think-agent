@@ -93,15 +93,20 @@ def init_session_state():
         }
     if "job_title" not in st.session_state:
         st.session_state.job_title = None
-    if "cross_silo_output" not in st.session_state:
-        st.session_state.cross_silo_output = {
+    if "cross_silo_evaluation" not in st.session_state:
+        st.session_state.cross_silo_evaluation = {
             "result": "",
+            "advice": "",
             "score": 0,
         }
     if "node_status" not in st.session_state:
         st.session_state.node_status = "example"
     if "last_stage" not in st.session_state:
         st.session_state.last_stage = ""
+    if "final_summary" not in st.session_state:
+        st.session_state.final_summary = None
+    if "hmw_output" not in st.session_state:
+        st.session_state.hmw_output = None
 
 
 def reset_conversation():
@@ -119,12 +124,15 @@ def reset_conversation():
     st.session_state.is_passing_evaluation = False
     st.session_state.conversation_started = False
     st.session_state.show_greeting = True
-    st.session_state.cross_silo_output = {
+    st.session_state.cross_silo_evaluation = {
         "result": "",
+        "advice": "",
         "score": 0,
     }
     st.session_state.node_status = "example"
     st.session_state.last_stage = ""
+    st.session_state.final_summary = ""
+    st.session_state.hmw_output = ""
     st.rerun()
 
 
@@ -137,11 +145,12 @@ async def process_user_input(user_message: str) -> Dict[str, Any]:
         reflection_result=st.session_state.reflection_result,
         is_passing_evaluation=st.session_state.is_passing_evaluation,
         job_title=st.session_state.job_title,
-        cross_silo_output=st.session_state.cross_silo_output,
+        cross_silo_evaluation=st.session_state.cross_silo_evaluation,
         node_status=st.session_state.node_status,
         last_stage=st.session_state.last_stage,
+        final_summary=st.session_state.final_summary,
+        hmw_output=st.session_state.hmw_output,
     )
-
     # Run the graph asynchronously
     result = await graph.ainvoke(state)
 
@@ -161,19 +170,28 @@ def display_message(message: Any):
             st.markdown(message.content)
     elif isinstance(message, ToolMessage):
         with st.chat_message("assistant", avatar="🤖"):
-            if "成功生成檔案" in message.content:
-                # Extract filename
-                file_path = message.content.split("：")[-1].strip()
-                if os.path.exists(file_path):
+            if "成功生成" in message.content and "檔案" in message.content:
+                # Extract filename (support both fullwidth and halfwidth colons)
+                content = message.content
+                if "：" in content:
+                    file_path = content.split("：")[-1].strip()
+                elif ":" in content:
+                    file_path = content.split(":")[-1].strip()
+                else:
+                    file_path = ""
+
+                if file_path and os.path.exists(file_path):
                     with open(file_path, "rb") as file:
                         st.download_button(
                             label="📥 下載策略報告 PPT",
                             data=file,
                             file_name=os.path.basename(file_path),
                             mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-                            key=f"download_{file_path}",  # Add unique key based on path
+                            key=f"download_{file_path}_{message.id if hasattr(message, 'id') else 'new'}",  # Add unique key
                         )
-                    st.success(f"報告已準備完成！ ({os.path.basename(file_path)})")
+                    st.success(
+                        f"在此下載您的策略報告簡報：{os.path.basename(file_path)}"
+                    )
                 else:
                     st.error(f"檔案生成回應顯示成功，但找不到檔案: {file_path}")
             else:
@@ -317,9 +335,11 @@ def main():
                 st.session_state.is_passing_evaluation = result["is_passing_evaluation"]
                 st.session_state.evaluation_result = result["evaluation_result"]
                 st.session_state.job_title = result["job_title"]
-                st.session_state.cross_silo_output = result["cross_silo_output"]
+                st.session_state.cross_silo_evaluation = result["cross_silo_evaluation"]
                 st.session_state.node_status = result["node_status"]
                 st.session_state.last_stage = result["last_stage"]
+                st.session_state.final_summary = result.get("final_summary", None)
+                st.session_state.hmw_output = result.get("hmw_output", None)
 
                 # Display only the latest AI response
                 latest_message = result["messages"][-1]

@@ -26,8 +26,9 @@ class ProblemEvaluation(BaseModel):
     missing_fields: list[str] = Field(..., description="缺少的關鍵資訊欄位")
 
 
-class CrossSiloOutput(BaseModel):
+class CrossSiloEvaluation(BaseModel):
     result: Optional[str] = Field(..., description="跨部門視角的見解")
+    advice: Optional[str] = Field(..., description="給用戶的建議")
     score: int = Field(..., description="策略完整度分數 (0-100)")
 
 
@@ -55,9 +56,10 @@ class State(BaseModel):
             "missing_fields": [],
         }
     )
-    cross_silo_output: dict = Field(
+    cross_silo_evaluation: dict = Field(
         default_factory=lambda: {
             "result": "",
+            "advice": "",
             "score": 0,
         }
     )
@@ -66,3 +68,5 @@ class State(BaseModel):
     node_status: str = "example"
     last_stage: str = "" # 用來記錄最後執行的節點名稱
     count_node_file_export: int = 0
+    hmw_output : Optional[str] = None
+    final_summary: Optional[str] = None

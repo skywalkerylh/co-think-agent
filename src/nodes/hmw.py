@@ -18,8 +18,10 @@ async def node_hmw_gen(state: State):
     """
     last_message = state.messages[-1]
     msg = await model.ainvoke([SystemMessage(content=prompt), last_message])
+    logger.info(f"HMW question generated: {msg.content.split('：')[-1].strip()}")
     return {
         "messages": [msg],
+        "hmw_output": msg.content.split("：")[-1].strip(),
         "node_status": "HMW question generated.",
         "last_stage": "hmw_gen",
     }

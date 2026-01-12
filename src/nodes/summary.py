@@ -13,7 +13,7 @@ async def node_summary(state: State) -> Dict[str, Any]:
     logger.info({"before summary:": profile})
 
     prompt = f"""
-    你是一位策略顧問，請針對痛點與目標的問答文本，分別針對痛點和目標做摘要, 需要記住主管每一個提到的點, 不可以漏掉任何資訊。
+    你是一位策略顧問，請針對痛點與目標的問答文本，分別針對痛點和目標做摘要, 每個資訊都用逗點隔開，不可以漏掉任何資訊。
     痛點: {profile["pain_point"]}
     目標: {profile["goal"]}
 

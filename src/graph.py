@@ -6,7 +6,8 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from src.llm import tools
 from src.logger import logger
 from src.nodes import (
-    node_cross_silo,
+    node_cross_silo_ask,
+    node_cross_silo_evaluate,
     node_evaluation,
     node_file_export,
     node_final_summary,
@@ -23,19 +24,16 @@ def route_after_situation(state: State) -> str:
     """Route based on whether information is complete."""
     # 如果上一輪是 refine_ask，直接進入 evaluation 重新評估
     if state.last_stage == "refine_ask":
-        return "summary"
+        return "evaluation"
 
     if state.reflection_result["is_complete"]:
-        return "summary"  # 資訊齊全，進入下一關
+        return "evaluation"  # 資訊齊全，進入下一關
     else:
         return "reflection"  # 資訊不齊全，進入追問
 
 
 def route_after_evaluation(state: State) -> str:
     """Route based on whether evaluation suggests refinement."""
-    logger.info(
-        f"Routing check after evaluation: is_complete={state.is_passing_evaluation}"
-    )
     if state.is_passing_evaluation:
         return "hmw_gen"  # 資訊齊全，進入下一關
     else:
@@ -44,7 +42,7 @@ def route_after_evaluation(state: State) -> str:
 
 def route_after_cross_silo(state: State) -> str:
     """Route based on whether cross-silo information is complete."""
-    score = state.cross_silo_output.get("score", 0)
+    score = state.cross_silo_evaluation.get("score", 0)
     if score < 65:
         return END  # 分數低於 65，中斷等待用戶回答（繼續對話）
     else:
@@ -56,12 +54,14 @@ def route_start(state: State) -> str:
     logger.info({"route_start": state.last_stage})
     if state.last_stage == "file_export":
         return "file_export"
-    # 如果 cross_silo 已經開始（result不為空）且分數未達標，則回到 cross_silo
-    result = state.cross_silo_output.get("result", "")
-    score = state.cross_silo_output.get("score", 0)
 
+    result = state.cross_silo_evaluation.get("result", "")
+    score = state.cross_silo_evaluation.get("score", 0)
+
+    # 進入 evaluate 的條件：已經有 result (代表 ask 過了) 且 用戶剛回答完 (last_stage 可能是 ask 或 evaluate loop)
+    # 如果 score >= 65 會在 route_after_cross_silo 就走 final_summary，所以這裡處理的是未完成的 loop
     if result and score < 65:
-        return "cross_silo"
+        return "cross_silo_evaluate"
 
     return "situation"
 
@@ -76,7 +76,8 @@ workflow_streamlit.add_node("summary", node_summary)
 workflow_streamlit.add_node("evaluation", node_evaluation)
 workflow_streamlit.add_node("refine_ask", node_refine_ask)
 workflow_streamlit.add_node("hmw_gen", node_hmw_gen)
-workflow_streamlit.add_node("cross_silo", node_cross_silo)
+workflow_streamlit.add_node("cross_silo_ask", node_cross_silo_ask)
+workflow_streamlit.add_node("cross_silo_evaluate", node_cross_silo_evaluate)
 workflow_streamlit.add_node("final_summary", node_final_summary)
 workflow_streamlit.add_node("file_export", node_file_export)
 workflow_streamlit.add_node("tools", ToolNode(tools))
@@ -86,23 +87,24 @@ workflow_streamlit.add_conditional_edges(
     route_start,
     {
         "situation": "situation",
-        "cross_silo": "cross_silo",
+        "cross_silo_evaluate": "cross_silo_evaluate",
         "file_export": "file_export",
     },
 )
 
 workflow_streamlit.add_edge("reflection", END)
-workflow_streamlit.add_edge("summary", "evaluation")
+#workflow_streamlit.add_edge("summary", "evaluation")
 workflow_streamlit.add_edge("refine_ask", END)
-workflow_streamlit.add_edge("hmw_gen", "cross_silo")
+workflow_streamlit.add_edge("hmw_gen", "cross_silo_ask")
+workflow_streamlit.add_edge("cross_silo_ask", END)
 workflow_streamlit.add_edge("final_summary", "file_export")
 workflow_streamlit.add_edge("tools", END)
-# Conditional routing after situation
+
 workflow_streamlit.add_conditional_edges(
     "situation",
     route_after_situation,
     {
-        "summary": "summary",  # 齊全 -> 下一關
+        "evaluation": "evaluation",  # 齊全 -> 下一關
         "reflection": "reflection",  # 缺 -> 追問
     },
 )
@@ -115,7 +117,7 @@ workflow_streamlit.add_conditional_edges(
     },
 )
 workflow_streamlit.add_conditional_edges(
-    "cross_silo",
+    "cross_silo_evaluate",
     route_after_cross_silo,
     {"final_summary": "final_summary", END: END},
 )

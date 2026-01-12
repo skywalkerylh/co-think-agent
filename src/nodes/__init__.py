@@ -1,4 +1,4 @@
-from .cross_silo import node_cross_silo
+from .cross_silo import node_cross_silo_ask, node_cross_silo_evaluate
 from .evaluation import node_evaluation
 from .file_export import node_file_export
 from .final_summary import node_final_summary
@@ -9,7 +9,8 @@ from .situation import node_situation
 from .summary import node_summary
 
 __all__ = [
-    "node_cross_silo",
+    "node_cross_silo_ask",
+    "node_cross_silo_evaluate",
     "node_evaluation",
     "node_file_export",
     "node_final_summary",
