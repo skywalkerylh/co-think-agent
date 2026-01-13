@@ -15,7 +15,7 @@ async def node_situation(state: State) -> Dict[str, Any]:
     目前已知的資訊: {current_profile}
     你是一個策略顧問，專門協助企業高層釐清他的職位與專案目標。
     
-    請分析主管的最新回答，判斷是否需要整合及更新 'job_title', 'pain_point', 'goal'。
+    請分析主管的最新回答，萃取主管的職位(job_title）, 痛點（pain_point）, 目標(goal)。
     假設主管回答很模糊，需轉換為具體的句子來補充資訊。例如：“做AI” -> "導入AI技術"
     
     規則：

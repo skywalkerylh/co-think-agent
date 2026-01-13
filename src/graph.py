@@ -22,12 +22,12 @@ from src.state import State
 
 def route_after_situation(state: State) -> str:
     """Route based on whether information is complete."""
-    # 如果上一輪是 refine_ask，直接進入 evaluation 重新評估
+    # 如果上一輪是 refine_ask，直接進入 summary, evaluation 重新評估
     if state.last_stage == "refine_ask":
-        return "evaluation"
+        return "summary"
 
     if state.reflection_result["is_complete"]:
-        return "evaluation"  # 資訊齊全，進入下一關
+        return "summary"  # 資訊齊全，進入下一關
     else:
         return "reflection"  # 資訊不齊全，進入追問
 
@@ -93,7 +93,7 @@ workflow_streamlit.add_conditional_edges(
 )
 
 workflow_streamlit.add_edge("reflection", END)
-#workflow_streamlit.add_edge("summary", "evaluation")
+workflow_streamlit.add_edge("summary", "evaluation")
 workflow_streamlit.add_edge("refine_ask", END)
 workflow_streamlit.add_edge("hmw_gen", "cross_silo_ask")
 workflow_streamlit.add_edge("cross_silo_ask", END)
@@ -104,7 +104,7 @@ workflow_streamlit.add_conditional_edges(
     "situation",
     route_after_situation,
     {
-        "evaluation": "evaluation",  # 齊全 -> 下一關
+        "summary": "summary",  # 齊全 -> 下一關
         "reflection": "reflection",  # 缺 -> 追問
     },
 )
